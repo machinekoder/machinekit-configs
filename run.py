@@ -32,7 +32,7 @@ try:
     else:
         launcher.load_bbio_file('paralell_cape2.bbio')
     if mtEnabled:
-        launcher.start_process("configserver ~/Machineface ~/Cetus/")
+        launcher.start_process('configserver ~/Cetus')
     launcher.start_process('linuxcnc ' + configName)
 except subprocess.CalledProcessError:
     launcher.end_session()
