@@ -219,3 +219,41 @@ def setup_hbp_led(thread):
 def setup_exp(name):
     hal.newsig('%s-pwm' % name, hal.HAL_FLOAT, init=0.0)
     hal.newsig('%s-enable' % name, hal.HAL_BIT, init=False)
+
+
+def setup_smartplugs():
+    power_enable_signal = hal.newsig('smartplug-power-enable', hal.HAL_BIT)
+    fan_enable_signal = hal.newsig('smartplug-fan-enable', hal.HAL_BIT)
+    power_signal = hal.newsig('smartplug-power', hal.HAL_FLOAT)
+    energy_signal = hal.newsig('smartplug-energy', hal.HAL_FLOAT)
+
+    # first smartplug - machine power
+    address = "10.0.0.8"
+    name = "smartplug-power"
+    smartplug = hal.loadusr('hal_smartplug -n %s -e -a %s' % (name, address), wait_name=name)
+
+    smartplug.pin('enable').link(power_enable_signal)
+    smartplug.pin('power').link(power_signal)
+    smartplug.pin('energy').link(energy_signal)
+    hal.Pin('motion.digital-out-io-15').link(power_enable_signal)
+
+    # second smartplug - fan control
+    address = "10.0.0.7"
+    name = "smartplug-fan"
+    smartplug = hal.loadusr('hal_smartplug -n %s -a %s' % (name, address), wait_name=name)
+
+    smartplug.pin('enable').link(fan_enable_signal)
+    hal.Pin('motion.digital-out-io-16').link(fan_enable_signal)
+
+    rcomp = hal.RemoteComponent('smartplug-control', timer=100)
+    rcomp.newpin('power-enable', hal.HAL_BIT, hal.HAL_IO)
+    rcomp.newpin('fan-enable', hal.HAL_BIT, hal.HAL_IO)
+    rcomp.newpin('power', hal.HAL_FLOAT, hal.HAL_IN)
+    rcomp.newpin('energy', hal.HAL_FLOAT, hal.HAL_IN)
+    rcomp.ready()
+
+    rcomp.pin('power-enable').link(power_enable_signal)
+    rcomp.pin('fan-enable').link(fan_enable_signal)
+    rcomp.pin('power').link(power_signal)
+    rcomp.pin('energy').link(energy_signal)
+
