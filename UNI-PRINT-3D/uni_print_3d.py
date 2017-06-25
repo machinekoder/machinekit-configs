@@ -94,6 +94,8 @@ base.setup_estop(errorSignals, thread='servo-thread')
 base.setup_tool_loopback()
 # Probe
 base.setup_probe(thread='servo-thread')
+# Smartplugs
+hardware.setup_smartplugs()
 # Setup Hardware
 hardware.setup_hardware(thread='servo-thread')
 
